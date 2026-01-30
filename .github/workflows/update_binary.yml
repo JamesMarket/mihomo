@@ -59,34 +59,7 @@ jobs:
           # 清理临时文件
           rm raw.txt hagezi_temp.yaml
 
-      - name: 4. 处理 Direct (自动格式化版)
-        run: |
-          if [ -f "direct.yaml" ]; then
-            echo ">>> 发现 direct.yaml，正在标准化格式..."
-            
-            # 1. 创建临时 YAML 文件，写入头部
-            echo "payload:" > direct_temp.yaml
-            
-            # 2. 读取你的纯文本文件，自动加上 YAML 缩进和引号
-            # 逻辑：读取 -> 去掉注释/空行 -> 每行前面加 "  - '" -> 每行后面加 "'"
-            grep -vE '^#|^$' direct.yaml | sed "s/^/  - '/; s/$/'/" >> direct_temp.yaml
-            
-            echo ">>> 生成的临时 YAML 内容预览 (前10行)："
-            head -n 10 direct_temp.yaml
-
-            echo ">>> 编译为二进制 (.mrs)..."
-            ./mihomo convert-ruleset domain yaml direct_temp.yaml RULE-SET/direct.mrs
-            
-            echo ">>> 验证生成结果："
-            ls -lh RULE-SET/direct.mrs
-            
-            # 清理临时文件
-            rm direct_temp.yaml
-          else
-            echo "⚠️ 警告：根目录下没找到 direct.yaml，跳过此步骤。"
-          fi
-
-      - name: 5. 提交并上传
+      - name: 4. 提交并上传
         run: |
           # 删除内核文件，保持仓库干净
           rm mihomo
