@@ -18,4 +18,3 @@ payload:
   - PROCESS-NAME,WeChat.exe
   - PROCESS-NAME,OneDrive.exe
   - PROCESS-NAME,DingTalk.exe
-  - PROCESS-NAME,Telegram.exe
