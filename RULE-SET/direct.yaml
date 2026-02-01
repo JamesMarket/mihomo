@@ -5,6 +5,7 @@ payload:
   # ====== 域名类 (记得加 DOMAIN-SUFFIX) ======
   - DOMAIN-SUFFIX,seatable.cn
   - DOMAIN-SUFFIX,lingxingerp.com
+  - DOMAIN-SUFFIX,xiaohongshu.com
 
   # ====== macOS (区分大小写) ======
   - PROCESS-NAME,WeChat
