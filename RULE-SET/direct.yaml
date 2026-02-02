@@ -2,6 +2,7 @@
 # Mac和Win双端混合规则
 
 payload:
+
   # ====== 域名类 (记得加 DOMAIN-SUFFIX) ======
   - DOMAIN-SUFFIX,seatable.cn
   - DOMAIN-SUFFIX,lingxingerp.com
