@@ -17,7 +17,6 @@ payload:
   - PROCESS-NAME,Longshot
   - PROCESS-NAME,PasteNow
   - PROCESS-NAME,wpsoffice
-  - PROCESS-NAME,wpscloudsvr
   - PROCESS-NAME,Windows App
   - PROCESS-NAME,夸克网盘
 
