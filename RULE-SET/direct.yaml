@@ -11,13 +11,13 @@ payload:
   - DOMAIN-SUFFIX,oraclecloud.com
 
   # ====== macOS (区分大小写) ======
-  - PROCESS-NAME,apsd
   - PROCESS-NAME,WeChat
   - PROCESS-NAME,OneDrive
   - PROCESS-NAME,DingTalk
   - PROCESS-NAME,Longshot
   - PROCESS-NAME,PasteNow
   - PROCESS-NAME,wpsoffice
+  - PROCESS-NAME,wpscloudsvr
   - PROCESS-NAME,Windows App
   - PROCESS-NAME,夸克网盘
 
