@@ -1,4 +1,4 @@
-name: 规则计数器
+name: 规则动态统计器
 
 on:
   push:
@@ -15,41 +15,52 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 动态区间统计与更新
+      - name: 动态区间统计与精准更新
         run: |
           FILE_PATH="RULE-SET/direct.yaml"
           
-          # 1. 计算全局总数
-          TOTAL_COUNT=$(grep -c "^[[:space:]]*- " "$FILE_PATH")
-          sed -i "s/\(# 总规则数: \)[0-9]*/\1$TOTAL_COUNT/" "$FILE_PATH"
-
-          # 2. 动态处理所有分类块
-          # 获取所有以 "# ====== 数字. " 开头的标题行号
-          line_numbers=$(grep -n "# ====== [0-9]\+\. " "$FILE_PATH" | cut -d: -f1)
-          lines=($line_numbers)
+          # 1. 计算全局总数 (统计所有以 - 开头的行)
+          TOTAL_COUNT=$(grep -c "^[[:space:]]*- " "$FILE_PATH" || echo 0)
+          echo "检测到总规则数: $TOTAL_COUNT"
           
-          for i in "${!lines[@]}"; do
-            start_line=${lines[$i]}
-            
-            # 确定该分类块的结束行（下一个标题行前，或文件末尾）
-            if [ $((i+1)) -lt ${#lines[@]} ]; then
-              end_line=${lines[$((i+1))]}
-            else
-              end_line=$(wc -l < "$FILE_PATH")
-            fi
-            
-            # 在这个区间内统计活跃规则（以 "- " 开头且非注释的行）
-            # 我们通过 sed 提取该区间内容，再用 grep 统计
-            section_count=$(sed -n "${start_line},${end_line}p" "$FILE_PATH" | grep -c "^[[:space:]]*- ")
-            
-            # 更新标题下方那一行（即 start_line + 1）的统计数值
-            # 只有当下一行确实包含 "[当前类别统计]" 字样时才执行，防止误改正常注释
-            target_line=$((start_line + 1))
-            sed -i "${target_line}s/\(\[当前类别统计\]: \)[0-9]*/\1$section_count/" "$FILE_PATH"
-          done
+          # 更新顶部的总规则数 (支持中英文冒号)
+          sed -i "s/\(# 总规则数[:：][[:space:]]*\)[0-9]*/\1$TOTAL_COUNT/" "$FILE_PATH"
+
+          # 2. 动态匹配所有分类块标题的行号
+          # 匹配格式如: # ====== 1. ... ======
+          line_numbers=$(grep -n "#[[:space:]]*======[[:space:]]*[0-9]\+\." "$FILE_PATH" | cut -d: -f1 || true)
+          
+          if [ -z "$line_numbers" ]; then
+            echo "未检测到有效分类标题，请检查标题格式是否为 '# ====== 数字. '"
+          else
+            lines=($line_numbers)
+            for i in "${!lines[@]}"; do
+              start_line=${lines[$i]}
+              
+              # 确定该分类块的搜索结束行
+              if [ $((i+1)) -lt ${#lines[@]} ]; then
+                end_line=$((lines[$((i+1))] - 1))
+              else
+                end_line=$(wc -l < "$FILE_PATH")
+              fi
+              
+              # 在当前分类区间内统计活跃规则 (排除注释行)
+              section_count=$(sed -n "${start_line},${end_line}p" "$FILE_PATH" | grep -c "^[[:space:]]*- " || echo 0)
+              
+              # 寻找标题下方紧跟的 [当前类别统计] 占位符
+              # 在标题后的 5 行范围内寻找占位符，以防中间有空行
+              search_limit=$((start_line + 5))
+              target_line=$(sed -n "${start_line},${search_limit}p" "$FILE_PATH" | grep -n "\[当前类别统计\]" | head -n 1 | cut -d: -f1)
+              
+              if [ ! -z "$target_line" ]; then
+                real_target_line=$((start_line + target_line - 1))
+                sed -i "${real_target_line}s/\(\[当前类别统计\][:：][[:space:]]*\)[0-9]*/\1$section_count/" "$FILE_PATH"
+              fi
+            done
+          fi
 
       - name: 自动提交更改
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: 实时更新全量规则统计 [skip ci]"
+          commit_message: "chore: 自动更新规则统计 (活跃总数: ${{ env.TOTAL_COUNT }}) [skip ci]"
           file_pattern: 'RULE-SET/direct.yaml'
