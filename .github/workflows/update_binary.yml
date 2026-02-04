@@ -1,4 +1,4 @@
-name: Auto Build MRS Rules
+name: Auto Build MRS and YAML Rules
 
 on:
   schedule:
@@ -21,7 +21,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo ">>> 下载最新正式版内核 (Compatible)..."
-          # 精准匹配 compatible 版本，避免多文件冲突
           gh release download --repo MetaCubeX/mihomo --pattern "*linux-amd64-compatible-v*.gz" --output mihomo.gz
           
           gunzip mihomo.gz
@@ -38,40 +37,40 @@ jobs:
           echo ">>> [1/4] 下载 Hagezi 源文件..."
           curl -sSL "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/pro.plus.txt" -o raw.txt
           
-          # 检查源文件是否下载成功
           if [ ! -s raw.txt ]; then
             echo "❌ 下载失败或文件为空！"
             exit 1
           fi
 
-          echo ">>> [2/4] 转换为 YAML 格式..."
-          echo "payload:" > hagezi_temp.yaml
+          echo ">>> [2/4] 生成文本版 YAML 规则..."
+          # 直接将输出路径指向 RULE-SET 文件夹
+          YAML_FILE="RULE-SET/hagezi_pro_plus.yaml"
+          echo "payload:" > $YAML_FILE
           
-          # ⚠️ 修正点：使用标准的两个空格缩进，避免格式错误
-          grep -vE '^#|^$' raw.txt | sed "s/^/  - '/; s/$/'/" >> hagezi_temp.yaml
+          # 格式化并写入 YAML
+          grep -vE '^#|^$' raw.txt | sed "s/^/  - '/; s/$/'/" >> $YAML_FILE
           
           echo ">>> [3/4] 编译为二进制 (.mrs)..."
-          # 语法: convert-ruleset <行为> <格式> <输入> <输出>
-          ./mihomo convert-ruleset domain yaml hagezi_temp.yaml RULE-SET/hagezi_pro_plus.mrs
+          ./mihomo convert-ruleset domain yaml $YAML_FILE RULE-SET/hagezi_pro_plus.mrs
           
           echo ">>> [4/4] 验证生成结果"
-          ls -lh RULE-SET/hagezi_pro_plus.mrs
+          ls -lh RULE-SET/hagezi_pro_plus.*
           
-          # 清理临时文件
-          rm raw.txt hagezi_temp.yaml
+          # 只清理原始下载的 txt 文件，保留生成好的 yaml 和 mrs
+          rm raw.txt
 
       - name: 4. 提交并上传
         run: |
-          # 删除内核文件，保持仓库干净
+          # 删除内核文件
           rm mihomo
 
           # 配置 Git 身份
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # 只添加生成的二进制文件
-          git add RULE-SET/*.mrs
+          # ⚠️ 修改点：同时添加 .mrs 和 .yaml 文件
+          git add RULE-SET/hagezi_pro_plus.mrs RULE-SET/hagezi_pro_plus.yaml
           
-          # 提交 (如果文件没变化，git commit 会自动退出，不会报错)
-          git commit -m "Auto-update rules binaries [skip ci]" || exit 0
+          # 提交更改
+          git commit -m "Auto-update rules: Binary and YAML [skip ci]" || exit 0
           git push
