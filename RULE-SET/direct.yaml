@@ -18,7 +18,6 @@ payload:
   - DOMAIN-SUFFIX,shuang.fun
   - DOMAIN-SUFFIX,linzhou.fun
   - DOMAIN-SUFFIX,moyulm.com
-  - DOMAIN-SUFFIX,shuangbox.cn
 
   # ====== 2. 进程名匹配 (PROCESS-NAME) ======
   # [当前类别统计]: 0
