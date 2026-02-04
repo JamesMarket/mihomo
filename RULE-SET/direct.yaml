@@ -9,6 +9,8 @@ payload:
   - DOMAIN-SUFFIX,xiaohongshu.com
   - DOMAIN-SUFFIX,oracle.com
   - DOMAIN-SUFFIX,oraclecloud.com
+  - DOMAIN-SUFFIX,daixialu.com
+  - DOMAIN-SUFFIX,daixiahuapp.com
 
   # ====== macOS (区分大小写) ======
   - PROCESS-NAME,WeChat
