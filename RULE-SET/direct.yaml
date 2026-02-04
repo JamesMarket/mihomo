@@ -11,7 +11,8 @@ payload:
   - DOMAIN-SUFFIX,oraclecloud.com
   - DOMAIN-SUFFIX,daixialu.com
   - DOMAIN-SUFFIX,daixiahuapp.com
-
+  - DOMAIN-SUFFIX,shuang.fun
+  
   # ====== macOS (区分大小写) ======
   - PROCESS-NAME,WeChat
   - PROCESS-NAME,OneDrive
